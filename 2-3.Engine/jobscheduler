@@ -1,0 +1,58 @@
+#!/bin/sh
+
+# chkconfig: 35 99 10
+# description: starts and stops JobScheduler instances
+
+SCHEDULER_HOME=/opt/sos-berlin.com/jobscheduler
+SCHEDULER_USER=scheduler
+
+prog="jobscheduler"
+lockfile="/var/lock/subsys/$prog"
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+if [ ! -f $SCHEDULER_HOME/scheduler/bin/jobscheduler.sh -o ! -d $SCHEDULER_HOME ]
+then
+    echo "JobScheduler startup: cannot start"
+    exit
+fi
+
+case "$1" in
+    start)
+            if [ -f $lockfile ]; then
+                echo $"$prog has already started."
+            else
+                echo -n $"Starting $prog: "
+                su - $SCHEDULER_USER -c "$SCHEDULER_HOME/scheduler/bin/jobscheduler.sh start" >/dev/null 2>&1
+                retval=$?
+                [ "$retval" -eq 0 ] && touch $lockfile
+                [ "$retval" -eq 0 ] && echo_success || echo_failure
+                echo ""
+            fi
+            ;;
+    stop)
+            echo -n $"Stopping $prog: "
+            su - $SCHEDULER_USER -c "$SCHEDULER_HOME/scheduler/bin/jobscheduler.sh stop" >/dev/null 2>&1
+            retval=$?
+            [ "$retval" -eq 0 ] && rm -f $lockfile
+            [ "$retval" -eq 0 ] && echo_success || echo_failure
+            echo ""
+            ;;
+    restart)
+            $0 stop
+            $0 start
+            ;;
+    status)
+            if [ -f $lockfile ]; then
+                echo "$prog started."
+            else
+                echo "$prog stopped."
+            fi
+            ;;
+    *)
+            echo "usage: $0 {start|stop|restart|status}"
+            exit 1
+esac
+
+exit 0
