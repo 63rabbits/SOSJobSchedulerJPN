@@ -1,4 +1,4 @@
-# SOS JobSchedulerの日本語化
+# SOS JobScheduler
 
 
 Google Sitesが新版移行に伴い旧版を廃止するので添付ファイルをここに移動しました。
